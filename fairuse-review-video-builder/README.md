@@ -49,10 +49,26 @@ TTS_PROVIDER=openai
 OPENAI_API_KEY=...
 ```
 
-Nếu chưa có API key, dùng:
+Nếu chưa có API key TTS, dùng:
 
 ```env
 TTS_PROVIDER=edge_local_demo
+```
+
+Để tạo script tự động bằng template, không cần API key:
+
+```env
+SCRIPT_PROVIDER=template
+```
+
+Để dùng AI tạo script tự nhiên hơn, chọn một provider và điền key:
+
+```env
+SCRIPT_PROVIDER=openai
+OPENAI_API_KEY=...
+# hoặc
+SCRIPT_PROVIDER=gemini
+GEMINI_API_KEY=...
 ```
 
 Không commit `.env` thật. API key chỉ đọc qua biến môi trường và không được lưu vào output project.
@@ -84,8 +100,9 @@ Trong UI:
 3. Trong tab **Clips & Timecodes**, có thể bấm **Auto Detect Highlights** để tool tự đề xuất các đoạn hook/highlight từ video local.
 4. Kiểm tra bảng kết quả gồm `start`, `end`, `score`, `reason`, `purpose`; sửa trực tiếp trong bảng nếu cần.
 5. Bấm **Use These Highlights** để lưu danh sách timecode vào project.
-6. Tab **Script & Voice**: nhập script review tiếng Việt.
-7. Tab **Risk Score**: xem điểm rủi ro và cảnh báo.
+6. Tab **Script & Voice**: có thể tự nhập script thủ công hoặc bấm **Auto Generate Script** để tạo lời bình luận dựa trên highlight.
+7. Sau khi script được tạo, có thể bấm **Improve Script** để làm câu văn mượt hơn rồi sửa tay tiếp.
+8. Tab **Risk Score**: xem điểm rủi ro và cảnh báo.
 
 ## Auto Detect Highlights
 
@@ -107,6 +124,28 @@ Cách dùng:
 6. Bấm **Use These Highlights** trước khi tính risk score hoặc render.
 
 Auto highlight chỉ là gợi ý kỹ thuật. Người dùng vẫn cần đảm bảo quyền sử dụng video, ghi nguồn, mute audio gốc theo mặc định và thêm bình luận/phân tích đủ rõ ràng.
+
+## Auto Generate Script
+
+Trong tab **Script & Voice**, có 3 cách làm việc:
+
+- **Manual**: người dùng tự viết hoặc dán script review tiếng Việt.
+- **Auto Template**: không cần API key; tool tạo script bằng template dựa trên `reason`, `purpose`, `score`, `start`, `end` của từng highlight.
+- **Auto AI**: dùng `SCRIPT_PROVIDER=openai` hoặc `SCRIPT_PROVIDER=gemini` cùng API key để tạo lời bình luận tự nhiên hơn.
+
+Các lựa chọn bổ sung:
+
+- **Phong cách**: Review phân tích, Reaction hài hước, Tóm tắt nhanh, Bình luận chuyên sâu, Giọng kể YouTube Shorts.
+- **Độ dài script**: Ngắn, Vừa, Dài.
+- **Improve Script**: làm câu văn mượt hơn, tăng độ cuốn hút, giữ nguyên ý chính và không kéo script quá dài. Nếu không có API key, tool dùng cải thiện template đơn giản.
+
+Script được tạo phải là lời bình luận/phân tích mới, không copy nguyên văn transcript gốc nếu không cần, không khẳng định thông tin không có trong clip và không phục vụ mục đích lách bản quyền.
+
+Quy trình đề xuất:
+
+```text
+Project Input → Auto Detect Highlights → Auto Generate Script → Generate Voice → Preview → Export
+```
 
 ## Render preview/final
 

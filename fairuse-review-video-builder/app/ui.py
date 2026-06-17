@@ -6,6 +6,7 @@ from .highlight_detector import detect_highlights
 from .models import ProjectConfig, ClipTimecode, RightsMode, AspectRatio, RenderQuality
 from .rights_checker import evaluate_project
 from .renderer import render_project
+from .script_writer import generate_script_from_highlights, improve_script
 from .config import settings
 
 
@@ -71,7 +72,34 @@ def run_ui() -> None:
                 ss.highlight_rows = manual_rows; ss.clips = _rows_to_clips(manual_rows)
                 st.success("Đã lưu timecode thủ công.")
     with tabs[2]:
-        ss.script = st.text_area("Script review tiếng Việt", ss.get("script","Đây là phần bình luận phân tích của tôi."), height=220)
+        st.subheader("Script & Voice")
+        col1, col2, col3 = st.columns(3)
+        script_mode = col1.selectbox("Cách tạo script", ["Manual", "Auto Template", "Auto AI"], index=0)
+        script_style = col2.selectbox("Phong cách", ["Review phân tích", "Reaction hài hước", "Tóm tắt nhanh", "Bình luận chuyên sâu", "Giọng kể YouTube Shorts"], index=0)
+        script_length = col3.selectbox("Độ dài script", ["Ngắn", "Vừa", "Dài"], index=1)
+        def script_project_context():
+            return {"project_name": ss.get("project_name", ""), "creator_name": ss.get("creator_name", ""), "source_url": ss.get("source_url", ""), "rights_mode": ss.get("rights_mode", "fair_use_review")}
+        if st.button("Auto Generate Script"):
+            rows = ss.get("highlight_rows") or []
+            if not rows and ss.get("clips"):
+                rows = _clips_to_rows(ss.get("clips"))
+            if not rows:
+                st.warning("Bạn cần nhập timecode hoặc chạy Auto Detect Highlights trước.")
+            else:
+                provider = "template" if script_mode == "Auto Template" else ("openai" if script_mode == "Auto AI" else "template")
+                try:
+                    ss.script = generate_script_from_highlights(script_project_context(), rows, style=script_style, tone="natural", language="vi", length=script_length, provider=provider)
+                    st.success("Đã tạo script. Bạn vẫn có thể sửa thủ công bên dưới.")
+                except Exception as exc:
+                    st.error(f"Không thể tạo script: {exc}")
+        if st.button("Improve Script"):
+            try:
+                provider = "openai" if script_mode == "Auto AI" else "template"
+                ss.script = improve_script(ss.get("script", ""), style=script_style, tone="natural", provider=provider)
+                st.success("Đã làm mượt script.")
+            except Exception as exc:
+                st.error(f"Không thể cải thiện script: {exc}")
+        ss.script = st.text_area("Script review tiếng Việt", ss.get("script","Đây là phần bình luận phân tích của tôi."), height=260)
     def build_config():
         clips = ss.get("clips")
         if not clips:
@@ -95,5 +123,5 @@ def run_ui() -> None:
             try: st.json({k:str(v) for k,v in render_project(build_config(), RenderQuality.final).items()})
             except Exception as e: st.error(str(e))
     with tabs[6]:
-        st.code(f"TTS_PROVIDER={settings.tts_provider}\nOUTPUT_DIR={settings.output_dir}\nTEMP_DIR={settings.temp_dir}\nCACHE_DIR={settings.cache_dir}\nFFMPEG_PATH={settings.ffmpeg_path}")
+        st.code(f"TTS_PROVIDER={settings.tts_provider}\nSCRIPT_PROVIDER={settings.script_provider}\nOUTPUT_DIR={settings.output_dir}\nTEMP_DIR={settings.temp_dir}\nCACHE_DIR={settings.cache_dir}\nFFMPEG_PATH={settings.ffmpeg_path}")
         st.caption("API key được đọc từ .env, không lưu vào project output.")

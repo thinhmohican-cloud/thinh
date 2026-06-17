@@ -7,8 +7,10 @@ from pydantic_settings import BaseSettings
 load_dotenv()
 class Settings(BaseSettings):
     tts_provider: str = Field("edge_local_demo", alias="TTS_PROVIDER")
+    script_provider: str = Field("template", alias="SCRIPT_PROVIDER")
     openai_api_key: str = Field("", alias="OPENAI_API_KEY")
     azure_speech_key: str = Field("", alias="AZURE_SPEECH_KEY")
+    gemini_api_key: str = Field("", alias="GEMINI_API_KEY")
     azure_speech_region: str = Field("", alias="AZURE_SPEECH_REGION")
     elevenlabs_api_key: str = Field("", alias="ELEVENLABS_API_KEY")
     output_dir: Path = Field(Path("./exports"), alias="OUTPUT_DIR")
