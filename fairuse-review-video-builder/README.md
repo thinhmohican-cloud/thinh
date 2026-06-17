@@ -81,8 +81,32 @@ Trong UI:
 00:02:00,00:02:08,Phân tích cách dựng cảnh
 ```
 
-3. Tab **Script & Voice**: nhập script review tiếng Việt.
-4. Tab **Risk Score**: xem điểm rủi ro và cảnh báo.
+3. Trong tab **Clips & Timecodes**, có thể bấm **Auto Detect Highlights** để tool tự đề xuất các đoạn hook/highlight từ video local.
+4. Kiểm tra bảng kết quả gồm `start`, `end`, `score`, `reason`, `purpose`; sửa trực tiếp trong bảng nếu cần.
+5. Bấm **Use These Highlights** để lưu danh sách timecode vào project.
+6. Tab **Script & Voice**: nhập script review tiếng Việt.
+7. Tab **Risk Score**: xem điểm rủi ro và cảnh báo.
+
+## Auto Detect Highlights
+
+Tính năng này phân tích video bằng các tín hiệu biên tập:
+
+- Scene change: điểm chuyển cảnh mạnh.
+- Motion: frame difference bằng OpenCV.
+- Audio peak: RMS/loudness theo từng window nếu video có audio.
+- Hook zone: cộng điểm nhẹ cho đoạn trong 0–30 giây đầu.
+- Diversity: tránh chọn các đoạn quá gần hoặc chồng lấn nhau.
+
+Cách dùng:
+
+1. Nhập video path hợp lệ trong tab **Project Input**.
+2. Mở tab **Clips & Timecodes**.
+3. Chọn số lượng highlight, độ dài clip, scene sensitivity.
+4. Bấm **Auto Detect Highlights**.
+5. Sửa `purpose` thành lý do bình luận/phân tích cụ thể hơn nếu cần.
+6. Bấm **Use These Highlights** trước khi tính risk score hoặc render.
+
+Auto highlight chỉ là gợi ý kỹ thuật. Người dùng vẫn cần đảm bảo quyền sử dụng video, ghi nguồn, mute audio gốc theo mặc định và thêm bình luận/phân tích đủ rõ ràng.
 
 ## Render preview/final
 

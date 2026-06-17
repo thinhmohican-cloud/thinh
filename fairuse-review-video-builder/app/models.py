@@ -51,6 +51,26 @@ class ScriptSegment(BaseModel):
     matched_clip_id: Optional[str] = None
     overlay_text: str = ""
 
+class HighlightCandidate(BaseModel):
+    start: str
+    end: str
+    score: float = Field(ge=0, le=100)
+    reason: str
+    purpose: str
+
+    @field_validator("start", "end")
+    @classmethod
+    def valid_highlight_time(cls, v: str) -> str:
+        from .utils import parse_timecode
+        parse_timecode(v); return v
+
+    @model_validator(mode="after")
+    def valid_highlight_range(self):
+        from .utils import parse_timecode
+        if parse_timecode(self.end) <= parse_timecode(self.start):
+            raise ValueError("Highlight end must be after start")
+        return self
+
 class RiskResult(BaseModel):
     risk_score: int
     warnings: list[str]
